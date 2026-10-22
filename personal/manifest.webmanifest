@@ -1,0 +1,22 @@
+{
+ "name": "개인 플래너 · peony",
+ "short_name": "개인 플래너",
+ "lang": "ko",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#F9E3E3",
+ "theme_color": "#F9E3E3",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "name": "업무 플래너 · linen",
+ "short_name": "업무 플래너",
+ "lang": "ko",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#EDEFE7",
+ "theme_color": "#EDEFE7",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}

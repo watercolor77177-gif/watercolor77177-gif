@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Daily Planners</title>
+<link rel="stylesheet" href="fonts/folio.css">
+<link rel="icon" type="image/png" sizes="192x192" href="folio/icon-192.png">
+<style>
+:root{--paper:#F5F4F1;--ink:#1D1B19;--ink-2:#6E6963;--ink-3:#A9A39C;--line:#DCD8D2;--gold:#80663F;
+  --display:"Bodoni Moda","Hahmlet","AppleMyungjo",serif;--body:"Noto Sans KR","Apple SD Gothic Neo",sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--paper:#141312;--ink:#ECE8E1;--ink-2:#A39D94;--ink-3:#6C675F;--line:#2E2B28;--gold:#CFB78D;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:max(48px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 64px max(20px,env(safe-area-inset-left,0px))}
+.eyebrow{margin:0 0 10px;font-family:var(--display);font-size:11px;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-3)}
+h1{margin:0;font-family:var(--display);font-weight:400;font-size:40px;line-height:1.15;letter-spacing:-.01em}
+.lead{margin:14px 0 34px;font-size:15px;line-height:1.7;color:var(--ink-2)}
+ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+li a{display:flex;align-items:center;gap:18px;padding:18px 2px;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+li img{width:64px;height:64px;border-radius:15px;flex:none}
+.name{display:block;font-family:var(--display);font-size:20px}
+.blurb{display:block;margin-top:3px;font-size:13.5px;color:var(--ink-2)}
+.go{margin-left:auto;font-size:12px;letter-spacing:.16em;color:var(--gold);white-space:nowrap}
+ol{margin:36px 0 0;padding:0 0 0 20px;font-size:14px;line-height:1.9;color:var(--ink-2)}
+ol b{color:var(--ink);font-weight:500}
+.note{margin-top:22px;font-size:12.5px;line-height:1.7;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<main>
+<p class="eyebrow">Daily Planners</p>
+<h1>플래너</h1>
+<p class="lead">로그인 없이 쓰는 오프라인 플래너예요. 기록은 이 기기 안에만 저장돼요.</p>
+<ul>
+<li><a href="folio/"><img src="folio/icon-192.png" alt=""><span><span class="name">Folio</span><span class="blurb">가는 선과 큰 숫자로 정리한 미니멀 다이어리</span></span><span class="go">열기</span></a></li>
+<li><a href="work/"><img src="work/icon-192.png" alt=""><span><span class="name">업무 플래너</span><span class="blurb">세이지 그린의 오가닉 플래너</span></span><span class="go">열기</span></a></li>
+<li><a href="personal/"><img src="personal/icon-192.png" alt=""><span><span class="name">개인 플래너</span><span class="blurb">블러시 핑크의 다꾸 감성 플래너</span></span><span class="go">열기</span></a></li>
+</ul>
+<ol>
+<li>쓰고 싶은 플래너를 눌러 Safari에서 열어요.</li>
+<li>Safari의 <b>공유</b> 버튼을 누르고 <b>홈 화면에 추가</b> → <b>추가</b>를 눌러요.</li>
+<li>다음부터는 홈 화면 아이콘으로 열면 돼요. 인터넷이 없어도 열려요.</li>
+</ol>
+<p class="note">기록은 이 웹사이트에 올라오지 않고 각자의 기기에만 저장돼요. 홈 화면 아이콘을 지우면 그 기기의 기록도 지워지니, 플래너 설정의 백업 파일 만들기를 가끔 눌러 두세요.</p>
+</main>
+</body>
+</html>
