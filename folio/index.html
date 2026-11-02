@@ -556,6 +556,8 @@ body.locked .app{visibility:hidden}
 .lock-key{background:none}
 .lock-dots i{width:11px;height:11px}
 .install-bar{border-radius:0;background:none;border:1px solid var(--line)}
+.install-app .acts{display:flex;gap:8px;margin-left:auto}
+.install-app .mini.strong{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 
 /* sheets, toast, tabs */
 .sheet{border-radius:0}
@@ -890,20 +892,62 @@ body.locked .app{visibility:hidden}
     } catch (e) { ok = false; }
     data = data && typeof data === 'object' ? data : {};
     const cache = { settings: data.settings || null, days: data.days || {}, todos: data.todos || {}, events: data.events || {}, meta: data.meta || {} };
+    const dirty = new Set(); // records changed in this window and not yet written
+    const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
     let t = 0;
+    const write = () => {
+      t = 0;
+      if (!ok) return;
+      try { window.localStorage.setItem(key, JSON.stringify(cache)); dirty.clear(); }
+      catch (e) { if (!S.storageWarned) { S.storageWarned = true; toast('이 기기에 저장 공간이 부족해서 기록을 저장하지 못했어요.'); } }
+    };
     const persist = () => {
       if (!ok) return;
       clearTimeout(t);
-      t = setTimeout(() => {
-        try { window.localStorage.setItem(key, JSON.stringify(cache)); }
-        catch (e) { if (!S.storageWarned) { S.storageWarned = true; toast('이 기기에 저장 공간이 부족해서 기록을 저장하지 못했어요.'); } }
-      }, 120);
+      t = setTimeout(write, 120);
     };
+    const mark = (kind, id) => dirty.add(kind === 'settings' ? 'settings' : kind + '/' + id);
+    /* Another open window of this app saved: take its records, keep the ones changed here and not yet written. */
+    const receive = raw => {
+      let inc = null;
+      try { inc = JSON.parse(raw || 'null'); } catch (e) { inc = null; }
+      if (!inc || typeof inc !== 'object') return;
+      const next = { settings: inc.settings || null, days: Object.assign({}, inc.days), todos: Object.assign({}, inc.todos), events: Object.assign({}, inc.events) };
+      dirty.forEach(k => {
+        if (k === 'settings') { next.settings = cache.settings; return; }
+        const i = k.indexOf('/'), kind = k.slice(0, i), id = k.slice(i + 1);
+        if (has(cache[kind], id)) next[kind][id] = cache[kind][id];
+        else delete next[kind][id];
+      });
+      const seeded = !!(cache.meta && cache.meta.seeded) || !!(inc.meta && inc.meta.seeded);
+      cache.settings = next.settings; cache.days = next.days; cache.todos = next.todos; cache.events = next.events;
+      cache.meta = Object.assign({}, inc.meta, cache.meta, seeded ? { seeded: true } : {});
+      let changed = false;
+      if (!Store.busy('settings', 'settings') && JSON.stringify(D.settings || null) !== JSON.stringify(cache.settings || null)) {
+        D.settings = cache.settings ? clone(cache.settings) : null;
+        changed = true;
+      }
+      ['days', 'todos', 'events'].forEach(kind => {
+        new Set(Object.keys(D[kind]).concat(Object.keys(cache[kind]))).forEach(id => {
+          if (Store.busy(kind, id)) return;
+          if (!has(cache[kind], id)) { if (has(D[kind], id)) { delete D[kind][id]; changed = true; } return; }
+          if (JSON.stringify(D[kind][id]) !== JSON.stringify(cache[kind][id])) { D[kind][id] = clone(cache[kind][id]); changed = true; }
+        });
+      });
+      if (changed) scheduleRender();
+    };
+    if (ok) {
+      window.addEventListener('storage', e => {
+        if (!ok || e.key !== key || (e.storageArea && e.storageArea !== window.localStorage)) return;
+        if (e.newValue === null) { ok = false; clearTimeout(t); location.reload(); return; } // wiped in another window
+        receive(e.newValue);
+      });
+    }
     return {
       mode: ok ? 'local' : 'memory', cache: cache,
       disable() { ok = false; clearTimeout(t); },
-      set(kind, id, val) { if (kind === 'settings') cache.settings = clone(val); else cache[kind][id] = clone(val); persist(); return Promise.resolve(); },
-      del(kind, id) { if (kind === 'settings') cache.settings = null; else delete cache[kind][id]; persist(); return Promise.resolve(); },
+      set(kind, id, val) { if (kind === 'settings') cache.settings = clone(val); else cache[kind][id] = clone(val); mark(kind, id); persist(); return Promise.resolve(); },
+      del(kind, id) { if (kind === 'settings') cache.settings = null; else delete cache[kind][id]; mark(kind, id); persist(); return Promise.resolve(); },
       markSeeded() { cache.meta = Object.assign({}, cache.meta, { seeded: true }); persist(); }
     };
   }
@@ -1753,7 +1797,7 @@ body.locked .app{visibility:hidden}
 
   function storeNote() {
     if (S.mode === 'db') return '기록은 내 Claude 계정에 저장돼요. 휴대폰이나 컴퓨터, 어디서 열어도 같은 플래너가 보여요.';
-    if (SKIN.offline && S.mode === 'local') return '기록은 이 기기 안에만 저장돼요. 인터넷이 없어도 쓸 수 있고, 다른 기기와는 이어지지 않아요. 홈 화면 아이콘으로 열어서 쓰세요.';
+    if (SKIN.offline && S.mode === 'local') return '기록은 이 기기 안에만 저장돼요. 인터넷이 없어도 쓸 수 있고, 다른 기기와는 이어지지 않아요. 설치한 앱 아이콘으로 열어서 쓰세요.';
     if (S.mode === 'local') return '기록은 이 브라우저에 저장돼요. 같은 기기의 같은 브라우저로 열면 이어서 쓸 수 있어요.';
     if (S.mode === 'memory') return '이 미리보기 화면에서는 기록이 저장되지 않아요. 파일을 내려받아 브라우저로 열면 저장돼요.';
     return '저장 공간에 연결하고 있어요.';
@@ -1791,13 +1835,13 @@ body.locked .app{visibility:hidden}
   /* ---------------- offline app: backup ---------------- */
   function offlineSettingsHTML() {
     const locked = canLock && !!readLock();
-    return (canLock ? '<div class="field"><span class="label">앱 잠금</span>' +
+    return installFieldHTML() + (canLock ? '<div class="field"><span class="label">앱 잠금</span>' +
         '<p class="hint">' + (locked ? '잠금이 켜져 있어요. 앱을 열 때 비밀번호 4자리를 물어봐요.' : '켜 두면 앱을 열 때 비밀번호 4자리를 물어봐요.') + '</p>' +
         (locked ? '<div class="row-btns"><button type="button" class="btn" data-action="lock-set">비밀번호 바꾸기</button><button type="button" class="btn ghost" data-action="lock-off">잠금 끄기</button></div>'
                 : '<button type="button" class="btn wide" data-action="lock-set">비밀번호 잠금 켜기</button>') +
       '</div>' : '') +
       '<div class="field"><span class="label">백업</span>' +
-        '<p class="hint">앱을 지우면 기록도 함께 지워져요. 가끔 백업 파일을 만들어 파일 앱에 저장해 두세요.</p>' +
+        '<p class="hint">' + (IS_IOS ? '앱을 지우면 기록도 함께 지워져요. 가끔 백업 파일을 만들어 파일 앱에 저장해 두세요.' : '앱을 지우거나 브라우저의 사이트 데이터를 지우면 기록도 함께 지워져요. 가끔 백업 파일을 만들어 안전한 곳에 보관해 두세요.') + '</p>' +
         '<div class="row-btns"><button type="button" class="btn" data-action="backup-export">백업 파일 만들기</button>' +
         '<label class="btn file-btn">백업 불러오기<input type="file" id="backupFile" class="sr" accept=".json,application/json"></label></div>' +
       '</div>';
@@ -2007,6 +2051,88 @@ body.locked .app{visibility:hidden}
     main.parentNode.insertBefore(bar, main);
   }
 
+  /* ---------------- offline app: install as an app (Chrome, Edge, Android) ---------------- */
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const IS_ANDROID = /Android/i.test(navigator.userAgent);
+  const IS_WIN = /Windows/i.test(navigator.userAgent);
+  const INSTALL_LATER_KEY = (SKIN.storageKey || 'planner') + ':install-later';
+  const Install = { ev: null, bar: null };
+  function isStandalone() {
+    if (window.navigator.standalone === true) return true;
+    if (!window.matchMedia) return false;
+    return ['standalone', 'window-controls-overlay', 'minimal-ui', 'fullscreen'].some(m => window.matchMedia('(display-mode: ' + m + ')').matches);
+  }
+  function installPlace() {
+    return IS_IOS || IS_ANDROID ? '홈 화면 아이콘으로' : IS_WIN ? '바탕화면과 시작 메뉴의 아이콘으로' : '앱 아이콘으로';
+  }
+  function installHowText() {
+    if (IS_IOS) return 'Safari의 공유 버튼 → 홈 화면에 추가를 누르면 앱처럼 쓸 수 있어요.';
+    if (IS_ANDROID) return '브라우저 메뉴(⋮)에서 ‘앱 설치’나 ‘홈 화면에 추가’를 누르면 앱처럼 쓸 수 있어요.';
+    return '주소창 오른쪽의 앱 설치 아이콘을 누르거나 브라우저 메뉴에서 ‘앱 설치’를 고르면 돼요. ' +
+      (IS_WIN ? '이미 설치했다면 시작 메뉴에서 Folio를 찾아 여세요.' : '이미 설치했다면 Folio 앱 아이콘으로 여세요.');
+  }
+  function installLaterRecently() {
+    try { const v = Number(window.localStorage.getItem(INSTALL_LATER_KEY) || 0); return !!v && Date.now() - v < 14 * 864e5; } catch (e) { return false; }
+  }
+  function showInstallBar() {
+    if (!SKIN.offline || !Install.ev || Install.bar || isStandalone() || installLaterRecently()) return;
+    const bar = document.createElement('div');
+    bar.className = 'example-bar install-app';
+    bar.innerHTML = '<span>Folio를 앱으로 설치하면 ' + installPlace() + ' 바로 열려요. 인터넷이 없어도 돼요.</span>' +
+      '<span class="acts"><button type="button" class="mini" data-action="install-later">나중에</button>' +
+      '<button type="button" class="mini strong" data-action="app-install">앱으로 설치</button></span>';
+    const main = $('main');
+    main.parentNode.insertBefore(bar, main);
+    Install.bar = bar;
+  }
+  function hideInstallBar() {
+    if (Install.bar) { Install.bar.remove(); Install.bar = null; }
+  }
+  function refreshSettingsSheet() {
+    if (!$('#sheet').hidden && S.sheet && S.sheet.kind === 'settings') openSettingsSheet();
+  }
+  function installLater() {
+    try { window.localStorage.setItem(INSTALL_LATER_KEY, String(Date.now())); } catch (e) { /* optional */ }
+    hideInstallBar();
+    toast('설치는 언제든 설정에서 할 수 있어요.');
+  }
+  async function runInstall() {
+    const ev = Install.ev;
+    if (!ev) { toast(installHowText()); return; }
+    Install.ev = null;
+    hideInstallBar();
+    let outcome = '';
+    try {
+      await ev.prompt();
+      const choice = await ev.userChoice;
+      outcome = (choice && choice.outcome) || '';
+    } catch (e) { outcome = 'error'; }
+    if (outcome === 'error') toast(installHowText());
+    else if (outcome !== 'accepted') toast('설치는 언제든 설정에서 할 수 있어요.');
+    refreshSettingsSheet();
+  }
+  function installFieldHTML() {
+    if (!SKIN.offline || isStandalone()) return '';
+    return '<div class="field"><span class="label">앱으로 설치</span>' +
+      (Install.ev
+        ? '<p class="hint">설치하면 ' + installPlace() + ' 바로 열려요. 인터넷이 없어도 돼요.</p><button type="button" class="btn wide" data-action="app-install">앱으로 설치</button>'
+        : '<p class="hint">' + esc(installHowText()) + '</p>') +
+      '</div>';
+  }
+  window.addEventListener('beforeinstallprompt', e => {
+    if (!SKIN.offline) return;
+    e.preventDefault();
+    Install.ev = e;
+    showInstallBar();
+    refreshSettingsSheet();
+  });
+  window.addEventListener('appinstalled', () => {
+    Install.ev = null;
+    hideInstallBar();
+    refreshSettingsSheet();
+    toast('앱으로 설치했어요. 다음부터는 ' + installPlace() + ' 여세요.');
+  });
+
   /* ---------------- events ---------------- */
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-view],[data-action],[data-mood],[data-cup],[data-filter],[data-due]');
@@ -2046,6 +2172,8 @@ body.locked .app{visibility:hidden}
       case 'lock-set': openPinSheet(); break;
       case 'lock-off': writeLock(null); openSettingsSheet(); toast('잠금을 껐어요.'); break;
       case 'backup-export': exportBackup(); break;
+      case 'app-install': runInstall(); break;
+      case 'install-later': installLater(); break;
     }
   });
 
@@ -2151,6 +2279,15 @@ body.locked .app{visibility:hidden}
       }
     });
     window.addEventListener('pagehide', () => Store.flushAll());
+    try {
+      if (window.launchQueue && typeof window.launchQueue.setConsumer === 'function') {
+        window.launchQueue.setConsumer(p => {
+          let h = '';
+          try { h = p && p.targetURL ? new URL(p.targetURL).hash.slice(1) : ''; } catch (e) { h = ''; }
+          if (h === 'todo') setView('todo'); else if (h === 'calendar') setView('cal');
+        });
+      }
+    } catch (e) { /* optional */ }
   }
 
   const hotApi = window.claude && window.claude.hot;

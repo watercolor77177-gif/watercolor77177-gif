@@ -18,5 +18,36 @@
    "sizes": "512x512",
    "type": "image/png"
   }
+ ],
+ "description": "인터넷 없이 쓰는 미니멀 데일리 플래너. 기록은 이 기기 안에만 저장돼요.",
+ "launch_handler": {
+  "client_mode": [
+   "focus-existing",
+   "auto"
+  ]
+ },
+ "shortcuts": [
+  {
+   "name": "할 일",
+   "url": "./#todo",
+   "icons": [
+    {
+     "src": "icon-192.png",
+     "sizes": "192x192",
+     "type": "image/png"
+    }
+   ]
+  },
+  {
+   "name": "캘린더",
+   "url": "./#calendar",
+   "icons": [
+    {
+     "src": "icon-192.png",
+     "sizes": "192x192",
+     "type": "image/png"
+    }
+   ]
+  }
  ]
 }
