@@ -1,8 +1,0 @@
-run1 exit=0
-run2 exit=0
-install exit=0 exe=True start_lnk=True desk_lnk=True uninstall_entry=Folio cmd="C:\Users\runneradmin\AppData\Local\Programs\Folio\Folio.exe" --uninstall zone=False
-lnk_target=C:\Users\runneradmin\AppData\Local\Programs\Folio\Folio.exe icon=C:\Users\runneradmin\AppData\Local\Programs\Folio\Folio.exe,0
-second launch exited=True code=0  first still running=True
-main window title=Folio
-close exited=True
-uninstall exit=0 exe_left=False dir_left=False start_lnk_left=False desk_lnk_left=False entry_left=False records_kept=True
