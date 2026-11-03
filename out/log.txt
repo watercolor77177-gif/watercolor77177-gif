@@ -1,0 +1,5 @@
+﻿2026-11-03 06:51:52  start 1.0.0, WebView2 156.0.4314.50
+2026-11-03 06:52:09  start 1.0.0, WebView2 156.0.4314.50
+2026-11-03 06:52:19  installed 1.0.0 to C:\Users\runneradmin\AppData\Local\Programs\Folio
+2026-11-03 06:52:20  start 1.0.0, WebView2 156.0.4314.50
+2026-11-03 06:52:32  uninstalled

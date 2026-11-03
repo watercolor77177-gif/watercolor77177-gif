@@ -1,0 +1,10 @@
+PASS page loaded :: {"app":true,"title":"Folio Daily Planner","bridge":true,"secure":true,"origin":"https://folio.example","fonts":"loaded","noto":true,"bodoni":true,"todos":["예시 · 중요한 일은 별표로 표시해요","예시 · 끝낸 일은 체크해요","예시 · 날짜 없는 일은 언젠가 목록에 모여요","selftest-065159"]}
+PASS bridge present
+PASS secure origin
+PASS todo saved :: ["예시 · 중요한 일은 별표로 표시해요","예시 · 끝낸 일은 체크해요","예시 · 날짜 없는 일은 언젠가 목록에 모여요","selftest-065159","selftest-065209"]
+PASS manual backup saved :: C:\Users\runneradmin\Documents\Folio 백업\folio-backup-2026-11-03 (2).json
+PASS backup toast :: 백업 파일을 문서 › Folio 백업 폴더에 저장했어요.
+폴더 열기
+PASS auto backup saved :: C:\Users\runneradmin\Documents\Folio 백업\자동 백업\folio-자동백업-2026-11-03.json
+state: {"app":true,"title":"Folio Daily Planner","bridge":true,"secure":true,"origin":"https://folio.example","fonts":"loaded","noto":true,"bodoni":true,"todos":["예시 · 중요한 일은 별표로 표시해요","예시 · 끝낸 일은 체크해요","예시 · 날짜 없는 일은 언젠가 목록에 모여요","selftest-065159"]}
+todos: ["예시 · 중요한 일은 별표로 표시해요","예시 · 끝낸 일은 체크해요","예시 · 날짜 없는 일은 언젠가 목록에 모여요","selftest-065159","selftest-065209"]
